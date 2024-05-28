@@ -101,6 +101,8 @@ export const App: FC = () => {
           fully local large scale image printing
           {" – "}
           <a href="https://github.com/JacksonKearl/PrintBig.ts">source</a>
+          {" – "}
+          <a href="https://woodgears.ca/bigprint/">original BigPrint</a>
         </span>
         <form onSubmit={render} style={{ marginTop: "10px" }} class={"stack"}>
           <label>
