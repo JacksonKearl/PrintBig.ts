@@ -1,5 +1,11 @@
 import { FC, useRef, useState } from "preact/compat"
-import { Jimp, TJimp, emptyImage, round, yieldThread } from "./utils"
+import useQueryState, {
+  Jimp,
+  TJimp,
+  emptyImage,
+  round,
+  yieldThread,
+} from "./utils"
 import { gridify } from "./gridify"
 import { paginate } from "./paginate"
 
@@ -9,12 +15,12 @@ export const App: FC = () => {
   const result = useRef<HTMLDivElement>(null)
   const statusElement = useRef<HTMLDivElement>(null)
 
-  const [unit, setUnit] = useState("inch")
-  const [width, setWidth] = useState(8)
-  const [height, setHeight] = useState(10.5)
-  const [overlap, setOverlap] = useState(0.2)
-  const [density, setDensity] = useState(300)
-  const [gridSize, setGridSize] = useState(1)
+  const [unit, setUnit] = useQueryState("unit", "inch")
+  const [width, setWidth] = useQueryState("width", 8)
+  const [height, setHeight] = useQueryState("height", 10.5)
+  const [overlap, setOverlap] = useQueryState("overlap", 0.2)
+  const [density, setDensity] = useQueryState("density", 300)
+  const [gridSize, setGridSize] = useQueryState("gridSize", 1)
   const [status, setStatus] = useState("")
 
   const parsedImage = useRef<TJimp | null>(null)
@@ -32,8 +38,8 @@ export const App: FC = () => {
     const style = document.createElement("style")
     style.textContent = `
       img {
-        height: calc(${cssHeight} / 3);
-        width: calc(${cssWidth} / 3);
+        height: calc(${cssHeight} / pi);
+        width: calc(${cssWidth} / pi);
       }
       
       @media print {
@@ -49,6 +55,7 @@ export const App: FC = () => {
       setStatus(
         'loading image data...\n(for best performance, ensure "advanced protection" is disabled)'
       )
+      await yieldThread()
       const rawImageData = await image.current!.files![0].arrayBuffer()
       parsedImage.current =
         parsedImage.current ?? (await Jimp.read(rawImageData as Buffer))
@@ -103,6 +110,17 @@ export const App: FC = () => {
           <a href="https://github.com/JacksonKearl/PrintBig.ts">source</a>
           {" – "}
           <a href="https://woodgears.ca/bigprint/">original BigPrint</a>
+        </span>
+        <span>
+          <a href="/">letter preset</a>
+          {" – "}
+          <a
+            href={
+              '/?overlap=0.5&density=118&height=27&width=19&gridSize=2&unit="cm"'
+            }
+          >
+            a4 preset
+          </a>
         </span>
         <form onSubmit={render} style={{ marginTop: "10px" }} class={"stack"}>
           <label>
@@ -221,6 +239,9 @@ export const App: FC = () => {
               style={{ width: "100px", margin: "5px" }}
               onClick={(e) => {
                 e.preventDefault()
+                alert(
+                  "Note: To ensure proper scale prints, you *MUST* configure the print dialog to have the appropriate page size, orientation, and *MARGINS* small enough to accommodate your tile size."
+                )
                 window.print()
               }}
               disabled

@@ -4,6 +4,8 @@ A poor man (aka Mac/Linux user)'s imitation of the inimitable Matthias Wandel's 
 
 Available as a fully local cross-platform browser based utility at [https://printbig.pages.dev](https://printbig.pages.dev).
 
+![website screenshot with examplar shepherd/lamb image](example.png)
+
 ## purpose
 
 It is often the case when building large scale projects that a full-size template of the work to be completed would be helpful to consult. For instance, one might glue the template to a stock workpiece and cut out the profile, or position surface features like drill holes. 
@@ -26,4 +28,3 @@ The original BigPrint program has much more functionality than this project curr
 - Implements "Tape Measure" mode
 
 If you are on Windows and those features sound interesting, try [BigPrint](https://woodgears.ca/bigprint/index.html)!
-
