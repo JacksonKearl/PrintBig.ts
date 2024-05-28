@@ -1,0 +1,25 @@
+{
+  "type": "module",
+  "scripts": {
+    "build": "node esbuild.js",
+    "watch": "node esbuild.js --watch",
+    "lint": "eslint .",
+    "serve": "npx wrangler pages dev public"
+  },
+  "dependencies": {
+    "jimp": "^0.22.12",
+    "preact": "^10.22.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.0.2",
+    "tsx": "^4.11.0",
+    "@types/node": "^20.12.12",
+    "esbuild": "^0.21.4",
+    "eslint": "^8.47.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-react": "^7.33.2",
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
+    "eslint-plugin-react-hooks": "^4.6.0"
+  }
+}

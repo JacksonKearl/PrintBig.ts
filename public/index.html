@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>PrintBig</title>
+    <script type="module" src="/index.js"></script>
+
+    <style>
+      * {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        width: max-content;
+        min-width: 100%;
+      }
+
+      form label > * {
+        display: inline-block;
+        width: 200px;
+        margin: 5px;
+      }
+
+      form label > :first-child {
+        text-align: end;
+        width: 100px;
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .print {
+        display: flex;
+        flex-direction: column;
+        width: min-content;
+        margin: 10px auto;
+      }
+
+      .print * {
+        line-height: 0;
+      }
+
+      .print div {
+        display: flex;
+      }
+
+      .print img {
+        display: block;
+        float: left;
+      }
+
+      @media print {
+        .nonprint {
+          display: none;
+        }
+
+        .print {
+          display: unset;
+          width: unset;
+          margin: unset;
+        }
+
+        .print div {
+          display: unset;
+        }
+
+        .print img {
+          float: unset;
+        }
+
+        .print img.empty {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body></body>
+</html>

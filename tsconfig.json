@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "noEmit": true,
+    "moduleResolution": "bundler",
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true, 
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+    "baseUrl": ".",
+    "paths": {
+      "react": ["node_modules/preact/compat/"],
+      "react-dom": ["node_modules/preact/compat/"]
+    }
+  },
+  "include": ["src/**/*.tsx"],
+  "exclude": ["**/*.test.ts"]
+}
