@@ -55,7 +55,7 @@ export const App: FC = () => {
       setStatus(
         'loading image data...\n(for best performance, ensure "advanced protection" is disabled)'
       )
-      await yieldThread()
+      await new Promise((resolve) => setTimeout(resolve, 250))
       const rawImageData = await image.current!.files![0].arrayBuffer()
       parsedImage.current =
         parsedImage.current ?? (await Jimp.read(rawImageData as Buffer))
