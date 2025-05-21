@@ -1,21 +1,40 @@
-import { Jimp, TJimp, fill, round, yieldThread } from "./utils"
+import { Jimp, TJimp, fill, round, yieldThreadOrDie } from "./utils"
 
-export const paginate = async (
-  gridImage: TJimp,
-  originalImage: TJimp,
-  density: number,
-  tileWidth: number,
-  tileHeight: number,
-  tileOverlap: number,
-  onPage: (image: string | null) => void,
-  onRow: () => void,
+export type TilingConfig = {
+  width: number
+  height: number
+  overlap: number
+  density: number
+}
+
+export type Handlers = {
+  onPage: (image: string | null) => void
+  onRow: () => void
   onStatus: (status: string) => void
-): Promise<{ totalPages: number; totalWidth: number; totalHeight: number }> => {
+}
+
+export const paginate = async ({
+  gridImage,
+  originalImage,
+  tilingConfig,
+  handlers,
+  signal,
+}: {
+  gridImage: TJimp
+  originalImage: TJimp
+  tilingConfig: TilingConfig
+  handlers: Handlers
+  signal: AbortSignal
+}): Promise<{
+  totalPages: number
+  totalWidth: number
+  totalHeight: number
+}> => {
   const pageGrid: (string | null)[][] = []
 
-  const maxWidth = tileWidth * density
-  const maxHeight = tileHeight * density
-  const overlap = tileOverlap * density
+  const maxWidth = tilingConfig.width * tilingConfig.density
+  const maxHeight = tilingConfig.height * tilingConfig.density
+  const overlap = tilingConfig.overlap * tilingConfig.density
 
   let nonEmptyPages = 0
   let pageCursor = 0
@@ -26,11 +45,11 @@ export const paginate = async (
   for (let j = 0; j < gridImage.bitmap.height; j += maxHeight - overlap) {
     const row: (string | null)[] = []
     pageGrid.push(row)
-    onRow()
+    handlers.onRow()
 
     for (let i = 0; i < gridImage.bitmap.width; i += maxWidth - overlap) {
-      onStatus("rendering page: " + ++pageCursor + "/" + totalPages)
-      await yieldThread()
+      handlers.onStatus("rendering page: " + ++pageCursor + "/" + totalPages)
+      await yieldThreadOrDie(signal)
 
       const width = Math.min(i + maxWidth, gridImage.bitmap.width) - i
       const height = Math.min(j + maxHeight, gridImage.bitmap.height) - j
@@ -51,7 +70,7 @@ export const paginate = async (
 
       if (!hasData) {
         row.push(null)
-        onPage(null)
+        handlers.onPage(null)
         continue
       }
 
@@ -73,13 +92,13 @@ export const paginate = async (
 
       row.push(b64)
       nonEmptyPages++
-      onPage(b64)
+      handlers.onPage(b64)
     }
   }
 
   return {
     totalPages: nonEmptyPages,
-    totalHeight: round(originalImage.bitmap.height / density, 2),
-    totalWidth: round(originalImage.bitmap.width / density, 2),
+    totalHeight: round(originalImage.bitmap.height / tilingConfig.density, 2),
+    totalWidth: round(originalImage.bitmap.width / tilingConfig.density, 2),
   }
 }

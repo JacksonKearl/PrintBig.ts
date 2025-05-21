@@ -17,8 +17,17 @@ export const positiveModulo = (i: number, n: number) => ((i % n) + n) % n
 export const round = (n: number, precision: number = 0) =>
   Math.round(n * 10 ** precision) / 10 ** precision
 
-export const yieldThread = () =>
-  new Promise((resolve) => setTimeout(resolve, 0))
+export const yieldThreadOrDie = (signal: AbortSignal) => {
+  return new Promise<void>((resolve, reject) =>
+    setTimeout(() => {
+      if (signal.aborted) {
+        reject("Aborted")
+      } else {
+        resolve()
+      }
+    }, 0)
+  )
+}
 
 export const emptyImage =
   "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="

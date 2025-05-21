@@ -1,13 +1,13 @@
-import { FC, useRef, useState } from "preact/compat"
+import { FC, useEffect, useMemo, useRef, useState } from "preact/compat"
 import useQueryState, {
   Jimp,
   TJimp,
   emptyImage,
   round,
-  yieldThread,
+  yieldThreadOrDie,
 } from "./utils"
 import { gridify } from "./gridify"
-import { paginate } from "./paginate"
+import { Handlers, paginate, TilingConfig } from "./paginate"
 
 export const App: FC = () => {
   const image = useRef<HTMLInputElement>(null)
@@ -22,6 +22,23 @@ export const App: FC = () => {
   const [density, setDensity] = useQueryState("density", 300)
   const [gridSize, setGridSize] = useQueryState("gridSize", 1)
   const [status, setStatus] = useState("")
+
+  const tilingConfig: TilingConfig = { density, width, height, overlap }
+
+  const abortController = useRef<AbortController | null>(null)
+
+  const signal = useMemo(() => {
+    abortController.current?.abort()
+    abortController.current = new AbortController()
+
+    return abortController.current.signal
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unit, width, height, overlap, density, gridSize])
+
+  const setStatusIfRunning = () =>
+    setStatus((s) => (s !== "" ? "Aborted." : ""))
+  signal.addEventListener("abort", setStatusIfRunning, { once: true })
 
   const parsedImage = useRef<TJimp | null>(null)
 
@@ -56,18 +73,24 @@ export const App: FC = () => {
         'loading image data...\n(for best performance, ensure "advanced protection" is disabled)'
       )
       await new Promise((resolve) => setTimeout(resolve, 250))
-      const rawImageData = await image.current!.files![0].arrayBuffer()
+      const rawImageData = Buffer.from(
+        await image.current!.files![0].arrayBuffer()
+      )
       parsedImage.current =
-        parsedImage.current ?? (await Jimp.read(rawImageData as Buffer))
+        parsedImage.current ?? (await Jimp.read(rawImageData))
     }
 
     setStatus("drawing grid...")
-    await yieldThread()
+    await yieldThreadOrDie(signal)
     const gridImage = gridify(parsedImage.current, density, gridSize)
+    await yieldThreadOrDie(signal)
 
     let row: HTMLDivElement
 
     const onPage = (page: string | null): void => {
+      if (signal.aborted) {
+        return
+      }
       const img = document.createElement("img")
       if (page) {
         img.src = page
@@ -77,24 +100,41 @@ export const App: FC = () => {
       }
       row.appendChild(img)
     }
+
     const onRow = () => {
+      if (signal.aborted) {
+        return
+      }
       row = document.createElement("div")
       result.current?.appendChild(row)
     }
-    const onStatus = (status: string): void => setStatus(status)
-    const stats = await paginate(
-      gridImage,
-      parsedImage.current,
-      density,
-      width,
-      height,
-      overlap,
+
+    const onStatus = (status: string): void => {
+      if (signal.aborted) {
+        return
+      }
+      setStatus(status)
+    }
+
+    const handlers: Handlers = {
       onPage,
       onRow,
-      onStatus
-    )
+      onStatus,
+    }
+
+    const stats = await paginate({
+      gridImage,
+      originalImage: parsedImage.current,
+      tilingConfig,
+      handlers,
+      signal,
+    })
+    if (signal.aborted) {
+      return
+    }
+
     result.current?.appendChild(row!)
-    setStatus(
+    onStatus(
       `printed image is ${stats.totalWidth}${cssUnit} x ${stats.totalHeight}${cssUnit} on ${stats.totalPages} pages.`
     )
     print.current!.disabled = false
