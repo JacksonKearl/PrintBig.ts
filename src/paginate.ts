@@ -42,6 +42,8 @@ export const paginate = async ({
     Math.ceil(gridImage.bitmap.height / (maxHeight - overlap)) *
     Math.ceil(gridImage.bitmap.width / (maxWidth - overlap))
 
+  const font = await Jimp.loadFont(Jimp.FONT_SANS_12_BLACK)
+
   for (let j = 0; j < gridImage.bitmap.height; j += maxHeight - overlap) {
     const row: (string | null)[] = []
     pageGrid.push(row)
@@ -87,6 +89,9 @@ export const paginate = async ({
 
       page.scan(0, height - 1, width, 1, fill(255, 0, 0, 255))
       page.scan(width - 1, 0, 1, height, fill(255, 0, 0, 255))
+
+      const pageLocation = `(${j / (maxHeight - overlap)}, ${i / (maxWidth - overlap)})`
+      page.print(font, 10, 10, pageLocation)
 
       const b64 = await page.getBase64Async(Jimp.MIME_PNG)
 
